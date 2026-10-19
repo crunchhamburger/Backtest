@@ -13,8 +13,8 @@ Timing convention (enforced here, not in strategy code)
 * Costs = (commission + slippage) bps x |traded notional|, charged per side.
 * Long-only, unlevered: every target must satisfy 0 <= w <= 1 and sum(w) <= 1.
   Buys are scaled down if needed so that cash never goes negative after costs.
-* A position is traded when its target changes, or when its drifted weight
-  deviates from target by more than ``rebalance_band``.
+* The portfolio is rebalanced to target when any position's target changes or
+  any drifted weight deviates from target by more than ``rebalance_band``.
 * Fractional shares are allowed (documented simplification).
 """
 from __future__ import annotations
@@ -96,8 +96,10 @@ def simulate(open_: np.ndarray, close: np.ndarray, tradable: np.ndarray, target:
         if t > 0 and nav > 0:
             tgt = target[t - 1]
             cur_w = val / nav
-            mask = tradable[t] & ((np.abs(tgt - last_tgt) > EPS) | (np.abs(cur_w - tgt) > band))
-            mask &= (np.abs(tgt * nav - val) > 1e-9 * nav)
+            # Any target change or band breach triggers a rebalance of every tradable position,
+            # so proceeds from trimming one asset are redeployed instead of drifting into cash.
+            trig = tradable[t] & ((np.abs(tgt - last_tgt) > EPS) | (np.abs(cur_w - tgt) > band))
+            mask = tradable[t] & (np.abs(tgt * nav - val) > 1e-9 * nav) if trig.any() else np.zeros(N, dtype=bool)
             if mask.any():
                 delta = np.where(mask, tgt * nav - val, 0.0)
                 pos = delta > 0
@@ -247,11 +249,11 @@ def equal_weight_target(md: MarketData, tickers: list[str], monthly: bool = True
     listed = pd.DataFrame({t: md.bars[t]["listed"] for t in tickers}).astype(float)
     w = listed.div(listed.sum(axis=1).replace(0, np.nan), axis=0).fillna(0.0)
     if monthly:
-        month_end = pd.Series(md.calendar, index=md.calendar).dt.to_period("M")
-        is_me = month_end != month_end.shift(-1)
-        # Hold weights constant between month ends, but react to new listings immediately.
-        w = w.where(is_me.to_numpy()[:, None] | (listed.diff().abs().sum(axis=1) > 0).to_numpy()[:, None])
-        w = w.ffill().fillna(0.0)
+        # Rebalance on the first trading day of each month (causal clock) and whenever
+        # a new asset lists; hold weights (no drift rebalancing beyond the engine band) otherwise.
+        per = pd.Series(md.calendar.to_period("M"), index=md.calendar)
+        clock = (per != per.shift(1)) | (listed.diff().abs().sum(axis=1) > 0)
+        w = w.where(clock, axis=0).ffill().fillna(0.0)
     return w
 
 
@@ -283,3 +285,53 @@ def ledger_reconcile(res: BacktestResult, md: MarketData, capital: float) -> pd.
         out[t] = cash + mv
     return pd.DataFrame({"ledger_equity": out, "engine_equity": res.equity.to_numpy(),
                          "abs_error": np.abs(out - res.equity.to_numpy())}, index=idx)
+
+
+# ----------------------------------------------------------------------------
+# Legacy replication of the original Colab notebook (cells 5 and 7)
+# ----------------------------------------------------------------------------
+NOTEBOOK_REFERENCE = {
+    # Values printed by SPY_First_Backtest_Starter.ipynb (Yahoo data 2010-01-04..2026-10-16,
+    # 10 bps per position change, cash at 0%, Sharpe with rf = 0).
+    "data_rows": 4223,
+    "holdout_start": "2021-09-29",
+    "holdout_trades": 24,
+    "Development 70%": {"SMA 20/50 net": {"CAGR": 0.085, "Annual vol": 0.113, "Sharpe (rf=0)": 0.780, "Max drawdown": -0.243},
+                        "Buy-and-hold": {"CAGR": 0.144, "Annual vol": 0.161, "Sharpe (rf=0)": 0.920, "Max drawdown": -0.320}},
+    "Holdout 30%": {"SMA 20/50 net": {"CAGR": 0.038, "Annual vol": 0.116, "Sharpe (rf=0)": 0.381, "Max drawdown": -0.283},
+                    "Buy-and-hold": {"CAGR": 0.136, "Annual vol": 0.173, "Sharpe (rf=0)": 0.826, "Max drawdown": -0.263}},
+}
+
+
+def legacy_notebook_sma2050(bars: pd.DataFrame, start: str = "2010-01-01", cost_bps: float = 10.0) -> dict:
+    """Re-implement the original notebook's SMA20/50 computation exactly (open-to-open, 0% cash).
+
+    Used only to confirm that the new engine's inputs reproduce the earlier
+    numbers before the improved methodology is applied.
+    """
+    p = bars[bars["listed"]].loc[start:, ["Open", "High", "Low", "Close"]].copy()
+    d = p.copy()
+    d["sma20"] = d["Close"].rolling(20, min_periods=20).mean()
+    d["sma50"] = d["Close"].rolling(50, min_periods=50).mean()
+    d["signal_at_close"] = (d["sma20"] > d["sma50"]).astype(int)
+    d["position_at_open"] = d["signal_at_close"].shift(1).fillna(0).astype(int)
+    d["next_open_return"] = d["Open"].shift(-1) / d["Open"] - 1
+    d["position_changes"] = d["position_at_open"].diff().abs()
+    d.loc[d.index[0], "position_changes"] = d.loc[d.index[0], "position_at_open"]
+    c = cost_bps / 10_000
+    d["strategy_return"] = d["position_at_open"] * d["next_open_return"] - d["position_changes"] * c
+    d["buy_hold_return"] = d["next_open_return"]
+    d = d.dropna(subset=["next_open_return", "strategy_return"])
+    cut = int(len(d) * 0.70)
+
+    def met(r):
+        eq = (1 + r).cumprod()
+        vol = r.std(ddof=1) * np.sqrt(252)
+        return {"CAGR": eq.iloc[-1] ** (252 / len(r)) - 1, "Annual vol": vol,
+                "Sharpe (rf=0)": r.mean() * 252 / vol, "Max drawdown": (eq / eq.cummax() - 1).min()}
+
+    out = {"data_rows": len(p), "holdout_start": str(d.index[cut].date()),
+           "holdout_trades": int(d["position_changes"].iloc[cut:].sum())}
+    for lab, fr in (("Development 70%", d.iloc[:cut]), ("Holdout 30%", d.iloc[cut:])):
+        out[lab] = {"SMA 20/50 net": met(fr["strategy_return"]), "Buy-and-hold": met(fr["buy_hold_return"])}
+    return out
