@@ -1,0 +1,83 @@
+{
+  "_comment": "Fixed research configuration. Change values here (or pass --config) rather than editing module code. Every output records the SHA-256 of this file.",
+  "as_of_date": "2026-10-18",
+  "data_start": "1993-01-01",
+  "data_end_exclusive": "2026-10-17",
+  "initial_capital": 100000.0,
+  "costs": {
+    "commission_bps": 0.0,
+    "slippage_bps": 10.0,
+    "_note": "Total cost = commission + slippage, charged per side on traded notional. Base case 10 bps per side.",
+    "sensitivity_bps": [0.0, 5.0, 10.0, 20.0, 50.0]
+  },
+  "rebalance_band": 0.10,
+  "cash": {
+    "primary_source": "FRED:DGS3MO",
+    "fallback_source": "YAHOO:^IRX",
+    "publication_lag_days": 1,
+    "allow_zero_cash_if_unavailable": false
+  },
+  "evaluation": {
+    "warmup_bars": 273,
+    "common_period_start": "2011-01-03",
+    "previously_inspected": {
+      "SPY": ["2010-01-04", "2026-10-16"],
+      "_note": "The prior Colab notebook inspected SPY 2010-2026 (70/30 split, holdout from 2021-09-29). Treated as exploratory, never as an untouched test."
+    },
+    "registry_freeze_note": "Registry hash is recorded before any results are generated; see registry_freeze.json."
+  },
+  "walk_forward": {
+    "train_years": 5,
+    "test_years": 1,
+    "mode": "rolling",
+    "selection_metric": "sharpe",
+    "bars_per_year": 252
+  },
+  "statistics": {
+    "bootstrap_reps": 1000,
+    "bootstrap_mean_block": 20,
+    "fdr_alpha": 0.10,
+    "seed": 20261018
+  },
+  "oracle": {
+    "trade_limits": [1, 2, 5, 10, 20, 40, 80, 160],
+    "cost_bps": 10.0
+  },
+  "aux_tickers": {
+    "market": "SPY",
+    "defensive": "IEF",
+    "risk_on_pair": ["XLY", "XLP"],
+    "breadth": ["XLK", "XLF", "XLE", "XLV", "XLI", "XLY", "XLP", "XLU", "XLB"],
+    "semis_leader": "SMH"
+  },
+  "universes": {
+    "A_broad": {
+      "label": "Broad market ETFs",
+      "tickers": ["SPY", "QQQ", "DIA", "IWM", "MDY", "VTI", "RSP"],
+      "benchmark": "SPY"
+    },
+    "B_sectors": {
+      "label": "S&P 500 sector SPDR ETFs",
+      "tickers": ["XLK", "XLF", "XLE", "XLV", "XLI", "XLY", "XLP", "XLU", "XLB", "XLC", "XLRE"],
+      "benchmark": "SPY"
+    },
+    "C_semi_etfs": {
+      "label": "Semiconductor ETFs",
+      "tickers": ["SMH", "SOXX", "XSD", "PSI"],
+      "benchmark": "SPY"
+    },
+    "D_semi_stocks": {
+      "label": "Individual semiconductor stocks",
+      "tickers": ["NVDA", "AMD", "MU", "AVGO", "TSM", "ASML", "AMAT", "LRCX", "KLAC", "INTC"],
+      "benchmark": "SMH"
+    },
+    "E_sp500_stocks": {
+      "label": "Historical S&P 500 constituents (point-in-time)",
+      "tickers": [],
+      "benchmark": "SPY",
+      "enabled": false,
+      "_note": "Disabled: no point-in-time constituent/delisting dataset is available. See Research_Methodology.md."
+    }
+  },
+  "rotation_universes": ["A_broad", "B_sectors", "D_semi_stocks"]
+}

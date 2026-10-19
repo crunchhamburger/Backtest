@@ -1,0 +1,17 @@
+{
+  "n_strategies": 100,
+  "registry_sha256": "ae35ea516557bc757ec5c7d7aead0b366a9d013946c06a19bb32942d5d9eaf3b",
+  "frozen_utc": "2026-10-19T04:40:10+00:00",
+  "families": {
+    "F01": "Moving-average trend following",
+    "F02": "Asymmetric entry and exit",
+    "F03": "Momentum",
+    "F04": "Mean reversion",
+    "F05": "Breakouts",
+    "F06": "Oscillators",
+    "F07": "Volatility and risk management",
+    "F08": "Regime detection",
+    "F09": "Relative strength and sector rotation",
+    "F10": "Hybrid strategies"
+  }
+}
