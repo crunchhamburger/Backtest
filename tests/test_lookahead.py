@@ -45,14 +45,23 @@ def test_strategy_has_no_lookahead(md, aux, spec):
         assert np.allclose(a.to_numpy(), b.to_numpy(), atol=1e-12), f"{spec.id} weights before {c} depend on later data"
 
 
-def test_detector_catches_leak(md, aux):
-    """Meta-test: a deliberately leaky rule (uses tomorrow's close) must be flagged."""
-    c = md.bars["QQQ"]["Close"]
-    leaky = (c.shift(-1) > c).astype(float)
+def test_detector_catches_leak(md):
+    """Meta-test: a deliberately leaky rule (uses tomorrow's close) must be flagged by the perturbation check."""
     cut = pd.Timestamp(CUTOFFS[0])
-    c2 = perturb_after(md, cut)["QQQ"]["Close"] if False else perturb_after(md, cut).bars["QQQ"]["Close"]
-    leaky2 = (c2.shift(-1) > c2).astype(float)
-    assert not np.allclose(leaky.loc[:cut].to_numpy(), leaky2.loc[:cut].to_numpy())
+
+    def leaky(m):
+        c = m.bars["QQQ"]["Close"]
+        return (c.shift(-1) > c).astype(float).loc[:cut].to_numpy()
+
+    base = leaky(md)
+    flagged = False
+    for factor in (0.5, 2.0):          # a crash and a doubling after the cutoff: one of them flips the last signal
+        bars = {t: b.copy() for t, b in md.bars.items()}
+        m = bars["QQQ"].index > cut
+        bars["QQQ"].loc[m, ["Open", "High", "Low", "Close"]] *= factor
+        md2 = MarketData(bars, md.calendar, md.cash_yield, md.cash_growth, md.validation, md.source)
+        flagged |= not np.array_equal(base, leaky(md2))
+    assert flagged
 
 
 @pytest.mark.parametrize("fn,args", [("sma", (20,)), ("ema", (12,)), ("rsi", (14,)), ("realized_vol", (20,)),

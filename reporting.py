@@ -266,7 +266,7 @@ def fig_family(results, figdir, syn):
     for i, d in enumerate(data, start=1):
         ax.scatter(np.random.default_rng(i).normal(i, 0.06, len(d)), d, s=6, color=CAT[0], alpha=0.35, linewidths=0)
     ax.axhline(0, color=INK, linewidth=0.8)
-    ax.set_xticks(range(1, len(fams) + 1), [f"{f}\n{textwrap.shorten(S.FAMILIES[f], 22)}" for f in fams], fontsize=7)
+    ax.set_xticks(range(1, len(fams) + 1), [f"{f}\n" + textwrap.fill(S.FAMILIES[f], 13) for f in fams], fontsize=6.5)
     ax.set_ylabel("Sharpe minus buy-and-hold Sharpe (full history, net of costs)")
     ax.set_title("Strategy families: risk-adjusted performance relative to holding the same asset")
     return _save(fig, figdir / "family_comparison.png", syn)

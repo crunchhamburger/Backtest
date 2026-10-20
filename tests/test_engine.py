@@ -70,7 +70,8 @@ def test_cash_never_negative(md):
     rng = np.random.default_rng(3)
     cols = ["SPY", "QQQ", "XLK"]
     w = pd.DataFrame(rng.dirichlet(np.ones(4), len(md.calendar))[:, :3], index=md.calendar, columns=cols)
-    w = w.where(rng.random(w.shape) > 0.7).ffill().fillna(0.0)
+    keep = pd.Series(rng.random(len(w)) > 0.7, index=w.index)      # change whole rows so each row sums to <= 1
+    w = w.where(keep, axis=0).ffill().fillna(0.0)
     r = backtest(md, w, 25.0, record_trades=True, band=0.05)
     assert (r.cash >= -1e-6).all()
     assert (r.exposure <= 1 + 1e-9).all()

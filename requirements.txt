@@ -1,0 +1,12 @@
+# Quant Research Lab - tested with Python 3.13 (also runs on Google Colab's Python 3.10+)
+numpy>=1.26
+pandas>=2.2
+scipy>=1.11
+statsmodels>=0.14
+matplotlib>=3.8
+yfinance>=0.2.40
+xlsxwriter>=3.1
+openpyxl>=3.1
+reportlab>=4.0
+pillow>=10.0
+pytest>=8.0

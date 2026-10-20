@@ -126,7 +126,7 @@ def test_oracle_dp_matches_bruteforce():
 def test_oracle_through_engine_dominates(md):
     a, c, d = interval_returns(md, "SPY")
     tgt = path_to_target(md, "SPY", daily_oracle_path(a, c), d)
-    r = backtest(md, tgt, 0.0, band=0.0)
+    r = backtest(md, tgt, 0.0, band=0.0, fast=False)
     bh = backtest(md, md.bars["SPY"]["listed"].astype(float).rename("SPY"), 0.0)
     assert r.equity.iloc[-1] > bh.equity.iloc[-1]
     # Costless daily oracle never loses money between consecutive opens.
