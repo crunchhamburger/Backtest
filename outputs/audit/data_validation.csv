@@ -1,0 +1,70 @@
+ticker,severity,check,detail,count
+SPY,info,dividends,136 ex-dividend dates,136
+QQQ,info,dividends,90 ex-dividend dates,90
+QQQ,info,splits,1 split events,1
+DIA,info,dividends,341 ex-dividend dates,341
+IWM,info,dividends,107 ex-dividend dates,107
+IWM,info,splits,1 split events,1
+MDY,info,dividends,127 ex-dividend dates,127
+VTI,info,dividends,102 ex-dividend dates,102
+VTI,info,splits,1 split events,1
+RSP,info,dividends,93 ex-dividend dates,93
+RSP,info,splits,1 split events,1
+XLK,info,dividends,85 ex-dividend dates,85
+XLK,info,splits,1 split events,1
+XLF,info,dividends,111 ex-dividend dates,111
+XLF,info,splits,1 split events,1
+XLE,info,dividends,112 ex-dividend dates,112
+XLE,info,splits,1 split events,1
+XLV,info,dividends,106 ex-dividend dates,106
+XLI,info,zero_volume,days with zero/negative volume,1
+XLI,info,dividends,110 ex-dividend dates,110
+XLY,info,dividends,111 ex-dividend dates,111
+XLY,info,splits,1 split events,1
+XLP,info,dividends,111 ex-dividend dates,111
+XLU,info,dividends,112 ex-dividend dates,112
+XLU,info,splits,1 split events,1
+XLB,info,dividends,111 ex-dividend dates,111
+XLB,info,splits,1 split events,1
+XLC,info,dividends,33 ex-dividend dates,33
+XLRE,info,zero_volume,days with zero/negative volume,5
+XLRE,info,dividends,44 ex-dividend dates,44
+SMH,info,dividends,14 ex-dividend dates,14
+SMH,info,splits,1 split events,1
+SOXX,info,dividends,78 ex-dividend dates,78
+SOXX,info,splits,1 split events,1
+XSD,info,zero_volume,days with zero/negative volume,4
+XSD,info,dividends,82 ex-dividend dates,82
+XSD,info,splits,1 split events,1
+PSI,info,zero_volume,days with zero/negative volume,12
+PSI,info,dividends,52 ex-dividend dates,52
+PSI,info,splits,1 split events,1
+NVDA,warning,extreme_return,|daily return|>40% on 2000-03-07,1
+NVDA,info,dividends,56 ex-dividend dates,56
+NVDA,info,splits,6 split events,6
+AMD,info,zero_volume,days with zero/negative volume,1
+AMD,warning,extreme_return,|daily return|>40% on 2016-04-22,1
+AMD,info,splits,1 split events,1
+MU,info,dividends,32 ex-dividend dates,32
+MU,info,splits,3 split events,3
+AVGO,info,dividends,64 ex-dividend dates,64
+AVGO,info,splits,1 split events,1
+TSM,info,dividends,45 ex-dividend dates,45
+TSM,info,splits,10 split events,10
+ASML,info,dividends,37 ex-dividend dates,37
+ASML,info,splits,4 split events,4
+AMAT,info,dividends,86 ex-dividend dates,86
+AMAT,info,splits,5 split events,5
+LRCX,info,dividends,50 ex-dividend dates,50
+LRCX,info,splits,3 split events,3
+KLAC,info,dividends,87 ex-dividend dates,87
+KLAC,info,splits,3 split events,3
+INTC,info,dividends,127 ex-dividend dates,127
+INTC,info,splits,5 split events,5
+IEF,info,dividends,291 ex-dividend dates,291
+AMD,info,off_calendar_rows,rows on dates absent from master calendar dropped,19
+MU,info,off_calendar_rows,rows on dates absent from master calendar dropped,19
+AMAT,info,off_calendar_rows,rows on dates absent from master calendar dropped,19
+LRCX,info,off_calendar_rows,rows on dates absent from master calendar dropped,19
+KLAC,info,off_calendar_rows,rows on dates absent from master calendar dropped,19
+INTC,info,off_calendar_rows,rows on dates absent from master calendar dropped,19

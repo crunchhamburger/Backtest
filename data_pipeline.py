@@ -262,7 +262,8 @@ def validate_bars(ticker: str, raw: pd.DataFrame, adj: pd.DataFrame, as_of: pd.T
     raw_gap = raw["Open"] / raw["Close"].shift(1)
     adj_gap = adj["Open"] / adj["Close"].shift(1)
     ex = raw["Dividends"].fillna(0) > 0
-    mism = ((raw_gap - adj_gap).abs() > 1e-6) & ~ex & raw_gap.notna()
+    # Yahoo rounds Adj Close, so the factor jitters by ~1e-6 on ordinary days; only flag real discrepancies.
+    mism = ((raw_gap - adj_gap).abs() > 1e-5) & ~ex & raw_gap.notna()
     if mism.sum():
         add("warning", "adjustment_gap_mismatch", "adjusted vs raw overnight gap differ on non-ex-dates", mism.sum())
     # Dividend consistency: adjusted close return should equal (Close+Div)/prevClose - 1 on ex-dates.
@@ -276,7 +277,7 @@ def validate_bars(ticker: str, raw: pd.DataFrame, adj: pd.DataFrame, as_of: pd.T
             add("warning", "dividend_adjustment", "adjusted return inconsistent with dividend on ex-date", bad.sum())
     # Adjustment factor must be non-decreasing through time (each distribution lowers past prices).
     f = adj["AdjFactor"]
-    drops = (f.diff() < -1e-6).sum()
+    drops = (f.pct_change() < -1e-5).sum()
     if drops:
         add("warning", "adj_factor_non_monotone", "dividend adjustment factor decreases", drops)
     # Splits: split-adjusted Close should not jump by the split ratio.

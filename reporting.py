@@ -334,6 +334,11 @@ def fig_scatter(results, figdir, syn):
     return _save(fig, figdir / "cagr_vs_drawdown.png", syn)
 
 
+# Fixed colour per strategy so the same strategy keeps its colour across every chart.
+ENTITY_COLOR = {"F01_01": CAT[0], "F01_02": CAT[1], "F02_01": CAT[2], "F02_07": CAT[3], "F05_09": CAT[4],
+                "F03_10": CAT[5], "F02_10": CAT[6], "F10_10": CAT[7]}
+
+
 def fig_equity(curves: pd.DataFrame, title: str, path: Path, syn: bool, start=None, log=True):
     c = curves.dropna(how="all")
     if start is not None:
@@ -342,7 +347,7 @@ def fig_equity(curves: pd.DataFrame, title: str, path: Path, syn: bool, start=No
     fig, (a1, a2) = plt.subplots(2, 1, figsize=(11, 7), sharex=True, gridspec_kw={"height_ratios": [2, 1]})
     for i, col in enumerate(c.columns):
         lw = 2.2 if col in ("BH", "Buy-and-hold") else 1.3
-        color = INK if col in ("BH", "Buy-and-hold") else CAT[i % len(CAT)]
+        color = INK if col in ("BH", "Buy-and-hold") else ENTITY_COLOR.get(col, CAT[i % len(CAT)])
         a1.plot(c.index, c[col], label=col, linewidth=lw, color=color)
         dd = c[col] / c[col].cummax() - 1
         a2.plot(c.index, dd, linewidth=1.0 if lw < 2 else 1.6, color=color)

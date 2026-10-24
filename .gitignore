@@ -7,3 +7,8 @@ venv/
 
 # Synthetic smoke-test outputs are never committed
 outputs_synthetic/
+
+# Downloaded market data stay local (Yahoo terms); regenerate with run_experiments.py
+data/cache/
+# Large pickled intermediate results
+outputs/audit/results.pkl
